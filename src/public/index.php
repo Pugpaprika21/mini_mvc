@@ -2,39 +2,36 @@
 
 declare(strict_types=1);
 
-use App\Foundation\Router\RouteGroupInterface;
-use App\Foundation\Router\Router as AppRouter;
+use PPPk\Factory\AppBuilder;
+use PPPk\Router\RouteGroupInterface;
 
-require_once __DIR__ . "/../app/Foundation/Router/Router.php";
+require_once __DIR__ . "/../app/Foundation/AppBuilder.php";
 
-$app = new AppRouter();
-
-$authMiddleware = function ($params, $next) {
-    if ($_GET['token'] ?? '' !== 'secret') {
-        echo "Denied\n";
-        return;
+class UserController
+{
+    public function index($id)
+    {
+        echo $id;
     }
-    echo "Middleware Passed\n";
-    $next();
-};
+}
 
-// http://localhost:9090/?route=/api/v1/get
-$app->get("/user/{userId}/post/{postId}", function ($userId, $postId) {
+$app = new AppBuilder();
+
+$router = $app->useRouter();
+
+$router->get("/test/{id}", [UserController::class, "index"]);
+$router->get("/user/{userId}", [UserController::class, "index"]);
+$router->get("/product/{productId}", [UserController::class, "index"]);
+
+$router->get("/user/{userId}/post/{postId}", function ($userId, $postId) {
     echo "User ID: $userId, Post ID: $postId";
 });
 
-$app->group("/api/v1", function (RouteGroupInterface $group) use($authMiddleware) {
+$router->group("/api/v1", function (RouteGroupInterface $group) {
     $group->get("/get", function () {
         echo "AAAA";
-    }, [$authMiddleware]);
+    });
 });
 
-try {
-    $route = filter_var($_GET["route"] ?? "/", FILTER_SANITIZE_URL);
-    $app->dispatch($route);
-} catch (Exception $e) {
-    echo json_encode([
-        "message" => $e->getMessage(),
-        "code_error" => $e->getCode(),
-    ]);
-}
+$route = filter_var($_GET["route"] ?? "/", FILTER_SANITIZE_URL);
+$router->dispatch($route);
