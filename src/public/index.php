@@ -1,34 +1,40 @@
 <?php
 
-require_once __DIR__ . '/../app/Core/Router.php';
+declare(strict_types=1);
 
-use App\Core\Router;
+use App\Factory\AppBuilder;
+use App\Foundation\Router\RouteGroupInterface;
 
-$router = new Router();
+require_once __DIR__ . "/../app/Foundation/Router/Router.php";
 
-$router->add('#^/api/v1/test', function () {
-    echo "test";
+class UserController
+{
+    public function index($id)
+    {
+        echo $id;
+    }
+}
+// http://localhost:9090/?route=/api/v1/get
+$app = AppBuilder::concreate();
+
+$router = $app->useRouter();
+
+$router->get("/test/{id}", [UserController::class, "index"]);
+$router->get("/user/{userId}/post/{postId}", function ($userId, $postId) {
+    echo "User ID: $userId, Post ID: $postId";
+});
+$router->group("/api/v1", function (RouteGroupInterface $group) {
+    $group->get("/get", function () {
+        echo "AAAA";
+    });
 });
 
-$router->group('/api/v1/user', function (Router $router) {
-    $router->add('/list', function () {
-        echo "User list";
-    });
-
-    $router->add('#/get/(\d+)#', function ($id) {
-        echo "Get user ID = $id";
-    });
-
-    $router->add('#/(\d+)/edit#', function ($id) {
-        echo "Edit user ID = $id";
-    });
-});
-
-$router->group('/api/v1/product', function (Router $router) {
-    $router->add('#/show/(\d+)#', function ($id) {
-        echo "Show product ID = $id";
-    });
-});
-
-$route = $_GET['route'] ?? '/';
-$router->dispatch($route);
+try {
+    $route = filter_var($_GET["route"] ?? "/", FILTER_SANITIZE_URL);
+    $router->dispatch($route);
+} catch (Exception $e) {
+    echo json_encode([
+        "message" => $e->getMessage(),
+        "code_error" => $e->getCode(),
+    ]);
+}
