@@ -1,16 +1,44 @@
 <?php
 
-namespace App\Foundation\Router {
+/* @create by Pug */
+
+namespace PPPk\Factory {
+
+    use PPPk\Router\RouteInterface;
+    use PPPk\Router\Router;
+
+    interface AppBuilderInterface
+    {
+        public function useRouter(): RouteInterface;
+    }
+
+    class AppBuilder implements AppBuilderInterface
+    {
+        private RouteInterface $router;
+
+        public function __construct()
+        {
+            $this->router = new Router();
+        }
+        public function useRouter(): RouteInterface
+        {
+            return $this->router;
+        }
+    }
+}
+
+namespace PPPk\Router {
 
     use Exception;
 
     interface RouteInterface
     {
         public function group(string $prefix, callable $callback): void;
-        public function get(string $pattern, callable $handler, array $middlewares = []): void;
-        public function post(string $pattern, callable $handler, array $middlewares = []): void;
-        public function put(string $pattern, callable $handler, array $middlewares = []): void;
-        public function delete(string $pattern, callable $handler, array $middlewares = []): void;
+        public function get(string $pattern, callable|array $handler, array $middlewares = []): void;
+        public function post(string $pattern, callable|array $handler, array $middlewares = []): void;
+        public function put(string $pattern, callable|array $handler, array $middlewares = []): void;
+        public function delete(string $pattern, callable|array $handler, array $middlewares = []): void;
+        public function dispatch(string $uri): void;
     }
 
     interface RouteGroupInterface extends RouteInterface {}
@@ -19,12 +47,12 @@ namespace App\Foundation\Router {
     {
         private array $routes = [];
         private string $prefix = "";
-        
+
         private const Get = "GET";
         private const Post = "POST";
         private const Put = "PUT";
         private const Delete = "DELETE";
-        
+
         public function group(string $prefix, callable $callback): void
         {
             $previousPrefix = $this->prefix;
@@ -32,27 +60,27 @@ namespace App\Foundation\Router {
             $callback($this);
             $this->prefix = $previousPrefix;
         }
-        public function get(string $pattern, callable $handler, array $middlewares = []): void
+        public function get(string $pattern, callable|array $handler, array $middlewares = []): void
         {
-            $this->addHttpMethod(self::Get);
+            $this->addMethod(self::Get);
             $this->add($pattern, $handler, $middlewares);
         }
 
-        public function post(string $pattern, callable $handler, array $middlewares = []): void
+        public function post(string $pattern, callable|array $handler, array $middlewares = []): void
         {
-            $this->addHttpMethod(self::Post);
+            $this->addMethod(self::Post);
             $this->add($pattern, $handler, $middlewares);
         }
 
-        public function put(string $pattern, callable $handler, array $middlewares = []): void
+        public function put(string $pattern, callable|array $handler, array $middlewares = []): void
         {
-            $this->addHttpMethod(self::Put);
+            $this->addMethod(self::Put);
             $this->add($pattern, $handler, $middlewares);
         }
 
-        public function delete(string $pattern, callable $handler, array $middlewares = []): void
+        public function delete(string $pattern, callable|array $handler, array $middlewares = []): void
         {
-            $this->addHttpMethod(self::Delete);
+            $this->addMethod(self::Delete);
             $this->add($pattern, $handler, $middlewares);
         }
 
@@ -65,7 +93,13 @@ namespace App\Foundation\Router {
 
                     $middlewareChain = array_reverse($route["middlewares"] ?? []);
                     $next = function () use ($route, $params) {
-                        call_user_func_array($route["handler"], $params);
+                        if (is_array($route["handler"])) {
+                            $this->handlerController($route["handler"], $params);
+                        }
+
+                        if (is_object($route["handler"])) {
+                            call_user_func_array($route["handler"], $params);
+                        }
                     };
 
                     foreach ($middlewareChain as $middleware) {
@@ -93,10 +127,9 @@ namespace App\Foundation\Router {
             return "#^" . $regex . "$#";
         }
 
-        private function add(string $pattern, callable $handler, array $middlewares = []): void
+        private function add(string $pattern, callable|array $handler, array $middlewares = []): void
         {
-            $fullPattern = $this->prefix . $pattern;
-            $regex = $this->convertToRegex($fullPattern, $paramNames);
+            $regex = $this->convertToRegex($this->prefix . $pattern, $paramNames);
 
             $this->routes[] = [
                 "regex" => $regex,
@@ -106,11 +139,32 @@ namespace App\Foundation\Router {
             ];
         }
 
-        private function addHttpMethod(string $method): void
+        private function addMethod(string $method): void
         {
             if ($_SERVER["REQUEST_METHOD"] !== $method) {
                 throw new Exception("Invalid HTTP method. Expected {$method}", 405);
             }
         }
+
+        private function handlerController(array $actionHandler, array $params)
+        {
+            list($controllerClass, $methodName) = $actionHandler;
+
+            if (!class_exists($controllerClass)) {
+                throw new Exception("Controller {$controllerClass} not found.");
+            }
+
+            $controller = new $controllerClass(); // constructor ...params
+            if (!method_exists($controller, $methodName)) {
+                throw new Exception("Method {$methodName} not found in controller {$controllerClass}.");
+            }
+
+            $params = count($params) ? $params : [];
+
+            return call_user_func_array([$controller, $methodName], $params);
+        }
     }
+}
+
+namespace PPPk\Helper {
 }
