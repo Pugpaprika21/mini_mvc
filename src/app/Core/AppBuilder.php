@@ -29,6 +29,7 @@ namespace PPPk\Factory {
 
 namespace PPPk\Router {
 
+    use Closure;
     use Exception;
 
     interface RouteInterface
