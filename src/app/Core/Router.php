@@ -147,20 +147,21 @@ namespace App\Factory {
 
     interface AppBuilderInterface
     {
-        public static function concreate(): self;
         public function useRouter(): RouteInterface;
     }
 
     class AppBuilder implements AppBuilderInterface
     {
-        public static function concreate(): self
+        private RouteInterface $router;
+
+        public function __construct()
         {
-            return new self();
+            $this->router = new Router();
         }
 
         public function useRouter(): RouteInterface
         {
-            return new Router();
+            return $this->router;
         }
     }
 }
