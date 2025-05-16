@@ -5,7 +5,7 @@
 namespace PPPk\Factory {
 
     use PPPk\Router\RouteInterface;
-    use PPPk\Router\Router;
+    use PPPk\Router\Router as BaseRouter;
 
     interface AppBuilderInterface
     {
@@ -18,7 +18,7 @@ namespace PPPk\Factory {
 
         public function __construct()
         {
-            $this->router = new Router();
+            $this->router = new BaseRouter();
         }
         public function useRouter(): RouteInterface
         {
@@ -90,8 +90,6 @@ namespace PPPk\Router {
                 if (preg_match($route["regex"], $uri, $matches)) {
                     array_shift($matches);
                     $params = array_combine($route["paramNames"], $matches);
-
-                    $middlewareChain = array_reverse($route["middlewares"] ?? []);
                     $next = function () use ($route, $params) {
                         if (is_array($route["handler"])) {
                             $this->handlerController($route["handler"], $params);
@@ -101,10 +99,11 @@ namespace PPPk\Router {
                             call_user_func_array($route["handler"], $params);
                         }
                     };
-
+                    
+                    $middlewareChain = array_reverse($route["middlewares"] ?? []);
                     foreach ($middlewareChain as $middleware) {
                         $current = $next;
-                        $next = function () use ($middleware, $params, $current) {
+                        $next = function () use ($middleware, $params, $current): Closure {
                             return $middleware($params, $current);
                         };
                     }
