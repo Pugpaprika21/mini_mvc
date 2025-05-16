@@ -15,11 +15,14 @@ class UserController
     }
 }
 // http://localhost:9090/?route=/api/v1/get
-$app = AppBuilder::concreate();
+$app = new AppBuilder();
 
 $router = $app->useRouter();
 
 $router->get("/test/{id}", [UserController::class, "index"]);
+$router->get("/user/{userId}", [UserController::class, "index"]);
+$router->get("/product/{productId}", [UserController::class, "index"]);
+
 $router->get("/user/{userId}/post/{postId}", function ($userId, $postId) {
     echo "User ID: $userId, Post ID: $postId";
 });
