@@ -1,34 +1,40 @@
 <?php
 
-require_once __DIR__ . '/../app/Core/Router.php';
+declare(strict_types=1);
 
-use App\Core\Router;
+use App\Foundation\Router\RouteGroupInterface;
+use App\Foundation\Router\Router as AppRouter;
 
-$router = new Router();
+require_once __DIR__ . "/../app/Foundation/Router/Router.php";
 
-$router->add('#^/api/v1/test', function () {
-    echo "test";
+$app = new AppRouter();
+
+$authMiddleware = function ($params, $next) {
+    if ($_GET['token'] ?? '' !== 'secret') {
+        echo "Denied\n";
+        return;
+    }
+    echo "Middleware Passed\n";
+    $next();
+};
+
+// http://localhost:9090/?route=/api/v1/get
+$app->get("/user/{userId}/post/{postId}", function ($userId, $postId) {
+    echo "User ID: $userId, Post ID: $postId";
 });
 
-$router->group('/api/v1/user', function (Router $router) {
-    $router->add('/list', function () {
-        echo "User list";
-    });
-
-    $router->add('#/get/(\d+)#', function ($id) {
-        echo "Get user ID = $id";
-    });
-
-    $router->add('#/(\d+)/edit#', function ($id) {
-        echo "Edit user ID = $id";
-    });
+$app->group("/api/v1", function (RouteGroupInterface $group) use($authMiddleware) {
+    $group->get("/get", function () {
+        echo "AAAA";
+    }, [$authMiddleware]);
 });
 
-$router->group('/api/v1/product', function (Router $router) {
-    $router->add('#/show/(\d+)#', function ($id) {
-        echo "Show product ID = $id";
-    });
-});
-
-$route = $_GET['route'] ?? '/';
-$router->dispatch($route);
+try {
+    $route = filter_var($_GET["route"] ?? "/", FILTER_SANITIZE_URL);
+    $app->dispatch($route);
+} catch (Exception $e) {
+    echo json_encode([
+        "message" => $e->getMessage(),
+        "code_error" => $e->getCode(),
+    ]);
+}
