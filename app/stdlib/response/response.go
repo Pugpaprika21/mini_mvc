@@ -26,7 +26,7 @@ type builderResponse struct {
 	viewX       echo.Map
 }
 
-func NewBuilder() *builderResponse {
+func NewReponseBuilder() *builderResponse {
 	return &builderResponse{}
 }
 

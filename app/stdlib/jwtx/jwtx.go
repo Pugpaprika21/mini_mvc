@@ -25,7 +25,7 @@ func New() IJwtx {
 func (j *jwtx) Validate() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			var resp = response.NewBuilder()
+			var resp = response.NewReponseBuilder()
 			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {
 				return c.JSON(http.StatusUnauthorized, resp.Code(constant.FOR_AUTH_ERROR).Message("Missing Authorization header").Build())
