@@ -14,14 +14,14 @@ import (
 
 type Config struct {
 	Jwtx        jwtx.IJwtx
-	Controllers controllers.IControllers
+	Controllers *controllers.Controllers
 	Views       *views.Template
 }
 
 type server struct {
 	server      *echo.Echo
-	jwtx        jwtx.IJwtx
-	controllers controllers.IControllers
+	jwtx        *jwtx.IJwtx
+	controllers controllers.Controllers
 }
 
 func New(conf *Config) *server {
@@ -37,8 +37,8 @@ func New(conf *Config) *server {
 
 	server := &server{
 		server:      e,
-		jwtx:        conf.Jwtx,
-		controllers: conf.Controllers,
+		jwtx:        &conf.Jwtx,
+		controllers: *conf.Controllers,
 	}
 
 	return server

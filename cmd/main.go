@@ -37,9 +37,9 @@ func main() {
 		}
 	}()
 
-	var models models.IModels = models.New(db)
-	var services services.IServices = services.New(models)
-	var controllers controllers.IControllers = controllers.New(services)
+	models := models.New(db)
+	services := services.New(models)
+	controllers := controllers.New(services)
 
 	jwtx := jwtx.New()
 
