@@ -5,9 +5,9 @@ import (
 	"minimvc/app/database"
 	"minimvc/app/database/models"
 	"minimvc/app/http/controllers"
-	"minimvc/app/router"
 	"minimvc/app/stdlib/jwtx"
 	"minimvc/app/stdlib/views"
+	"minimvc/router"
 
 	"minimvc/app/http/services"
 	"os"

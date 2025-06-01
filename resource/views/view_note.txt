@@ -1,0 +1,29 @@
+{{ block "page_title" . }}
+    <title>User Index</title>
+{{ end }}
+
+{{ block "page_styles" . }}
+    <style src="../../css/app.css?t={{ .time }}"></style>
+{{ end }}
+
+{{ block "page_scripts" . }}
+    <script src="../../js/app.js?t={{ .time }}"></script>
+{{ end }}
+
+{{ define "_pages/user/index.html" }}
+
+{{ template "_layouts_header" . }}
+
+{{ template "user_component_table" . }}
+
+{{ template "user_component_footer" . }}
+
+<a href="{{ call .reverse "user.index" 123 }}">URL</a>
+
+<h1 id="title_page" class="title-red">Hello {{ .User }}</h1>
+
+{{ template "_layouts_footer" . }}
+
+{{ end }}
+
+

@@ -1,0 +1,27 @@
+{{ block "page_title" . }}
+<title>{{ .Content }}</title>
+{{ end }}
+
+{{ block "page_styles" . }}
+<link rel="stylesheet" href="../css/home/app.css?t={{ .time }}">
+{{ end }}
+
+{{ block "page_scripts" . }}
+<script src="../js/home/app.js?t={{ .time }}"></script>
+{{ end }}
+
+{{ define "_pages/home/index.html" }} <!-- page name -->
+
+{{ template "_layouts_header" . }}
+
+<div class="d-flex justify-content-center align-items-center" style="height:100vh;">
+    <div class="welcome-card text-center">
+        <h1 class="display-5 mb-3">⚙️ {{ .Content }}</h1>
+        <p class="mb-4">Fast. Minimal. Clean. Your Go-powered MVC journey starts here.</p>
+        <a href="/dashboard" class="btn btn-primary btn-lg px-5">Launch</a>
+    </div>
+</div>
+
+{{ template "_layouts_footer" . }}
+
+{{ end }}

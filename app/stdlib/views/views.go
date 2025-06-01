@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-const rootPath = "../app/resource/views/"
+const rootPath = "../resource/views/"
 
 type Template struct {
 	tmpl *template.Template
@@ -52,11 +52,16 @@ func New() (*Template, error) {
 }
 
 func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	if viewContext, isMap := data.(echo.Map); isMap {
-		viewContext["csrf"] = c.Get(middleware.DefaultCSRFConfig.ContextKey)
-		viewContext["reverse"] = c.Echo().Reverse
-		viewContext["time"] = time.Now().Unix()
+	var viewContext echo.Map
+	if dataMap, ok := data.(echo.Map); ok {
+		viewContext = dataMap
+	} else {
+		viewContext = echo.Map{}
 	}
 
-	return t.tmpl.ExecuteTemplate(w, name, data)
+	viewContext["csrf"] = c.Get(middleware.DefaultCSRFConfig.ContextKey)
+	viewContext["reverse"] = c.Echo().Reverse
+	viewContext["time"] = time.Now().Unix()
+
+	return t.tmpl.ExecuteTemplate(w, name, viewContext)
 }

@@ -32,8 +32,8 @@ func New(conf *Config) *server {
 	e.Use(appMiddleware.LoggerWithConfig())
 	e.Use(middleware.RequestID())
 
-	e.Static("css", "../public/css")
-	e.Static("js", "../public/js")
+	e.Static("css", "../resource/public/css")
+	e.Static("js", "../resource/public/js")
 
 	server := &server{
 		server:      e,
