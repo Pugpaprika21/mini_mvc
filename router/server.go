@@ -1,6 +1,7 @@
 package router
 
 import (
+	"minimvc/app/config"
 	"minimvc/app/http/controllers"
 	appMiddleware "minimvc/app/http/middleware"
 
@@ -32,8 +33,9 @@ func New(conf *Config) *server {
 	e.Use(appMiddleware.LoggerWithConfig())
 	e.Use(middleware.RequestID())
 
-	e.Static("css", "../resource/public/css")
-	e.Static("js", "../resource/public/js")
+	for k, path := range config.Assets {
+		e.Static(k, path)
+	}
 
 	server := &server{
 		server:      e,
