@@ -7,7 +7,7 @@ import (
 )
 
 func (h *homeController) Index(c echo.Context) error {
-	return c.Render(http.StatusOK, "_pages/home/index.html", echo.Map{
+	return c.Render(http.StatusOK, "home/index.html", echo.Map{
 		"Content": "Golang MVC Starter",
 	})
 }

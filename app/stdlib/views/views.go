@@ -63,5 +63,5 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 	viewContext["reverse"] = c.Echo().Reverse
 	viewContext["time"] = time.Now().Unix()
 
-	return t.tmpl.ExecuteTemplate(w, name, viewContext)
+	return t.tmpl.ExecuteTemplate(w, fmt.Sprintf("_pages/%s", name), viewContext)
 }
